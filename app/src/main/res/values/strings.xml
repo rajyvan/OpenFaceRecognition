@@ -1,3 +1,7 @@
 <resources>
+
     <string name="app_name">OpenFaceRecognition</string>
+    <string name="main_title">Open face recognition</string>
+    <string name="title_activity_dashboard">DashboardActivity</string>
+
 </resources>

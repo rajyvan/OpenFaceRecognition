@@ -1,10 +1,12 @@
 package mg.yvan.openfacerecognition;
 
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.view.View;
+import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -22,6 +24,7 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import mg.yvan.openfacerecognition.manager.CameraManager;
 import mg.yvan.openfacerecognition.openCV.FaceDetector;
 import mg.yvan.openfacerecognition.utils.CameraUtils;
 
@@ -29,13 +32,18 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Bind(R.id.camera_view)
     JavaCameraView openCvCameraView;
-    @Bind(R.id.camera_switch)
-    Switch mCameraSwitch;
+    @Bind(R.id.toolbar)
+    Toolbar mToolbar;
+    @Bind(R.id.camera)
+    FloatingActionButton mCamera;
+    @Bind(R.id.library)
+    FloatingActionButton mLibrary;
+    @Bind(R.id.training)
+    FloatingActionButton mTraining;
 
     private CascadeClassifier cascadeClassifier;
     private Mat grayscaleImage;
     private int absoluteFaceSize;
-
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -56,7 +64,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ButterKnife.bind(this);
+
+        setSupportActionBar(mToolbar);
+
+        setTitle(getString(R.string.app_name));
 
         if (!OpenCVLoader.initDebug()) {
             Log.e(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), not working.");
@@ -64,18 +77,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             Log.d(this.getClass().getSimpleName(), "  OpenCVLoader.initDebug(), working.");
         }
 
-        openCvCameraView.setCameraIndex(-1);
+        openCvCameraView.setCameraIndex(CameraUtils.findFrontCameraID());
         openCvCameraView.setCvCameraViewListener(this);
 
-        mCameraSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mCamera.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public void onClick(View v) {
                 openCvCameraView.disableView();
-                if (isChecked) {
-                    openCvCameraView.setCameraIndex(CameraUtils.findFrontCameraID());
-                } else {
-                    openCvCameraView.setCameraIndex(CameraUtils.findBackCameraID());
-                }
+                openCvCameraView.setCameraIndex(CameraManager.getInstance().getNextCameraId());
                 openCvCameraView.enableView();
             }
         });
